@@ -29,7 +29,7 @@ A full-stack web application for managing CS:GO esports tournaments, built with 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/rushB.git
+   git clone https://github.com/prateekdas7/rushB.git
    cd rushB
    ```
 
