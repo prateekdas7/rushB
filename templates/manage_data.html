@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Data - RushB{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">
+            <i class="bi bi-gear"></i> Manage System Data
+        </h1>
+        <p class="lead text-muted">Add and manage maps, officials, and servers</p>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="dataTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="maps-tab" data-bs-toggle="tab"
+                data-bs-target="#maps" type="button">
+            <i class="bi bi-map"></i> Maps
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="officials-tab" data-bs-toggle="tab"
+                data-bs-target="#officials" type="button">
+            <i class="bi bi-person-badge"></i> Officials
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="servers-tab" data-bs-toggle="tab"
+                data-bs-target="#servers" type="button">
+            <i class="bi bi-server"></i> Servers
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="dataTabContent">
+    <!-- Maps Tab -->
+    <div class="tab-pane fade show active" id="maps" role="tabpanel">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Map</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_map') }}">
+                            <div class="mb-3">
+                                <label for="map_name" class="form-label">Map Name *</label>
+                                <input type="text" class="form-control" id="map_name"
+                                       name="map_name" required placeholder="e.g., Dust 2">
+                            </div>
+                            <div class="mb-3">
+                                <label for="map_code" class="form-label">Map Code *</label>
+                                <input type="text" class="form-control" id="map_code"
+                                       name="map_code" required placeholder="e.g., de_dust2">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save"></i> Add Map
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Existing Maps</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if maps %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for map in maps %}
+                                <tr>
+                                    <form method="POST" action="{{ url_for('edit_map', map_id=map.map_id) }}">
+                                        <td>
+                                            <input type="text"
+                                                   name="map_name"
+                                                   class="form-control"
+                                                   value="{{ map.name }}"
+                                                   required>
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="map_code"
+                                                   class="form-control"
+                                                   value="{{ map.code }}"
+                                                   required>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox"
+                                                   name="is_active"
+                                                   value="1"
+                                                   {% if map.is_active %}checked{% endif %}>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                Save
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger ms-1"
+                                                    formaction="{{ url_for('delete_map', map_id=map.map_id) }}"
+                                                    formmethod="POST"
+                                                    onclick="return confirm('Delete map {{ map.name }}?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </form>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No maps added yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Officials Tab -->
+    <div class="tab-pane fade" id="officials" role="tabpanel">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Official</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_official') }}">
+                            <div class="mb-3">
+                                <label for="official_name" class="form-label">Official Name *</label>
+                                <input type="text" class="form-control" id="official_name"
+                                       name="official_name" required placeholder="Full name">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save"></i> Add Official
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Existing Officials</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if officials %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for official in officials %}
+                                <tr>
+                                    <form method="POST" action="{{ url_for('edit_official', official_id=official.official_id) }}">
+                                        <td>
+                                            <input type="text"
+                                                   name="official_name"
+                                                   class="form-control"
+                                                   value="{{ official.name }}"
+                                                   required>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                Save
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger ms-1"
+                                                    formaction="{{ url_for('delete_official', official_id=official.official_id) }}"
+                                                    formmethod="POST"
+                                                    onclick="return confirm('Delete official {{ official.name }}?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </form>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No officials added yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servers Tab -->
+    <div class="tab-pane fade" id="servers" role="tabpanel">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Server</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_server') }}">
+                            <div class="mb-3">
+                                <label for="server_name" class="form-label">Server Name *</label>
+                                <input type="text" class="form-control" id="server_name"
+                                       name="server_name" required placeholder="e.g., EU Server 1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="server_location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="server_location"
+                                       name="server_location" placeholder="e.g., Frankfurt, Germany">
+                            </div>
+                            <div class="mb-3">
+                                <label for="server_ip" class="form-label">IP Address</label>
+                                <input type="text" class="form-control" id="server_ip"
+                                       name="server_ip" placeholder="e.g., 192.168.1.1">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-save"></i> Add Server
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Existing Servers</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if servers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>IP Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for server in servers %}
+                                <tr>
+                                    <form method="POST" action="{{ url_for('edit_server', server_id=server.server_id) }}">
+                                        <td>
+                                            <input type="text"
+                                                   name="server_name"
+                                                   class="form-control"
+                                                   value="{{ server.name }}"
+                                                   required>
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="server_location"
+                                                   class="form-control"
+                                                   value="{{ server.location or '' }}">
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="server_ip"
+                                                   class="form-control"
+                                                   value="{{ server.ip_address or '' }}">
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                Save
+                                            </button>
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger ms-1"
+                                                    formaction="{{ url_for('delete_server', server_id=server.server_id) }}"
+                                                    formmethod="POST"
+                                                    onclick="return confirm('Delete server {{ server.name }}?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </form>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No servers added yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - RushB{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+        <p class="lead text-muted">Welcome to the CS:GO Tournament Management System</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <i class="bi bi-trophy display-1 text-primary"></i>
+                <h3 class="mt-3">{{ stats.total_tournaments }}</h3>
+                <p class="text-muted mb-0">Total Tournaments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="bi bi-play-circle display-1 text-warning"></i>
+                <h3 class="mt-3">{{ stats.ongoing_tournaments }}</h3>
+                <p class="text-muted mb-0">Ongoing Tournaments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-1 text-success"></i>
+                <h3 class="mt-3">{{ stats.completed_tournaments }}</h3>
+                <p class="text-muted mb-0">Completed Tournaments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="bi bi-list-check"></i> Quick Actions
+        </h3>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-plus-circle text-primary"></i> Create New Tournament
+                </h5>
+                <p class="card-text">Start a new CS:GO tournament with round-robin format.</p>
+                <a href="{{ url_for('create_tournament') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Create Tournament
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-calendar3 text-success"></i> View All Tournaments
+                </h5>
+                <p class="card-text">Browse and manage all tournaments in the system.</p>
+                <a href="{{ url_for('tournaments') }}" class="btn btn-success">
+                    <i class="bi bi-eye"></i> View Tournaments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-gear text-warning"></i> Manage System Data
+                </h5>
+                <p class="card-text">Add maps, officials, and servers to the system.</p>
+                <a href="{{ url_for('manage_data') }}" class="btn btn-warning">
+                    <i class="bi bi-tools"></i> Manage Data
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle text-info"></i> About System
+                </h5>
+                <p class="card-text">Learn about the tournament management system features.</p>
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                    <i class="bi bi-info-lg"></i> Learn More
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle"></i> About RushB
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>System Features:</h6>
+                <ul>
+                    <li>Create and manage CS:GO tournaments with round-robin format</li>
+                    <li>Track teams, players, coaches, and substitutes</li>
+                    <li>Manage fixtures with multiple phases (Scheduled, Map Selection, In Progress, End)</li>
+                    <li>Record player statistics (Kills, Deaths, Assists, KDA)</li>
+                    <li>Automatic leaderboard calculation with win/draw/loss points</li>
+                    <li>Manage maps, officials, and servers</li>
+                </ul>
+
+                <h6 class="mt-3">Workflow:</h6>
+                <ol>
+                    <li>Create a tournament with basic information</li>
+                    <li>Add teams with players and coaches</li>
+                    <li>Set up maps, officials, and servers</li>
+                    <li>Start the tournament to generate fixtures</li>
+                    <li>Update fixtures as matches progress</li>
+                    <li>View real-time leaderboard standings</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

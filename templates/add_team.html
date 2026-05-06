@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Add Team - {{ tournament.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5">
+            <i class="bi bi-people"></i> Add Team
+        </h1>
+        <p class="lead text-muted">Tournament: {{ tournament.name }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" id="teamForm">
+                    <!-- Team Information -->
+                    <h4 class="mb-3"><i class="bi bi-info-circle"></i> Team Information</h4>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="team_name" class="form-label">Team Name *</label>
+                            <input type="text" class="form-control" id="team_name"
+                                   name="team_name" required placeholder="e.g., Cloud9">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="short_name" class="form-label">Short Name</label>
+                            <input type="text" class="form-control" id="short_name"
+                                   name="short_name" maxlength="10" placeholder="e.g., C9">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="coach_name" class="form-label">Coach Name *</label>
+                            <input type="text" class="form-control" id="coach_name"
+                                   name="coach_name" required placeholder="Full name">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="coach_nickname" class="form-label">Coach Nickname</label>
+                            <input type="text" class="form-control" id="coach_nickname"
+                                   name="coach_nickname" placeholder="In-game name">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Starting Players -->
+                    <h4 class="mb-3"><i class="bi bi-person-fill"></i> Starting Players (5 required)</h4>
+
+                    <div id="playersContainer">
+                        {% for i in range(5) %}
+                        <div class="card mb-3 player-card">
+                            <div class="card-body">
+                                <h6 class="card-title">Player {{ i + 1 }}</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">In-Game Name *</label>
+                                        <input type="text" class="form-control"
+                                               name="player_ign_{{ i }}" required
+                                               placeholder="e.g., s1mple">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Real Name</label>
+                                        <input type="text" class="form-control"
+                                               name="player_real_{{ i }}"
+                                               placeholder="Full name">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Country</label>
+                                        <input type="text" class="form-control"
+                                               name="player_country_{{ i }}"
+                                               placeholder="e.g., Ukraine">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Substitute Player -->
+                    <h4 class="mb-3"><i class="bi bi-person-plus"></i> Substitute Player (Optional)</h4>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">In-Game Name</label>
+                                    <input type="text" class="form-control"
+                                           name="sub_ign" placeholder="e.g., electronic">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Real Name</label>
+                                    <input type="text" class="form-control"
+                                           name="sub_real" placeholder="Full name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Country</label>
+                                    <input type="text" class="form-control"
+                                           name="sub_country" placeholder="e.g., Russia">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Add Team with Players
+                        </button>
+                        <a href="{{ url_for('tournament_detail', tournament_id=tournament.tournament_id) }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Setup Map Pool - {{ tournament.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5">
+            <i class="bi bi-map"></i> Setup Map Pool
+        </h1>
+        <p class="lead text-muted">Tournament: {{ tournament.name }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body p-4">
+                <p class="mb-4">Select which maps will be available for this tournament. Players will choose from these maps during the map selection phase.</p>
+
+                <form method="POST">
+                    {% if all_maps %}
+                    <div class="list-group mb-4">
+                        {% for map in all_maps %}
+                        <label class="list-group-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       name="map_ids" value="{{ map.map_id }}"
+                                       {% if map.map_id in selected_map_ids %}checked{% endif %}>
+                                <div class="ms-2">
+                                    <strong>{{ map.name }}</strong>
+                                    <br>
+                                    <small class="text-muted"><code>{{ map.code }}</code></small>
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Save Map Pool
+                        </button>
+                        <a href="{{ url_for('tournament_detail', tournament_id=tournament.tournament_id) }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Tournament
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> No maps available in the system.
+                        <a href="{{ url_for('manage_data') }}" class="alert-link">Add maps first</a>.
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Team - {{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5">
+            <i class="bi bi-pencil"></i> Edit Team
+        </h1>
+        <p class="lead text-muted">Update team and player information</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" id="teamForm">
+                    <!-- Team Information -->
+                    <h4 class="mb-3"><i class="bi bi-info-circle"></i> Team Information</h4>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="team_name" class="form-label">Team Name *</label>
+                            <input type="text" class="form-control" id="team_name"
+                                   name="team_name" required value="{{ team.name }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="short_name" class="form-label">Short Name</label>
+                            <input type="text" class="form-control" id="short_name"
+                                   name="short_name" maxlength="10" value="{{ team.short_name or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="coach_name" class="form-label">Coach Name *</label>
+                            <input type="text" class="form-control" id="coach_name"
+                                   name="coach_name" required value="{{ team.coach_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="coach_nickname" class="form-label">Coach Nickname</label>
+                            <input type="text" class="form-control" id="coach_nickname"
+                                   name="coach_nickname" value="{{ team.coach_nickname or '' }}">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Players -->
+                    <h4 class="mb-3"><i class="bi bi-person-fill"></i> Players</h4>
+
+                    <div id="playersContainer">
+                        {% for player in players %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title mb-0">
+                                        {% if player.role == 'PLAYER' %}
+                                        <span class="badge bg-primary">Starting Player</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Substitute</span>
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                                <input type="hidden" name="player_id_{{ loop.index0 }}" value="{{ player.player_id }}">
+                                <input type="hidden" name="player_role_{{ loop.index0 }}" value="{{ player.role }}">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">In-Game Name *</label>
+                                        <input type="text" class="form-control"
+                                               name="player_ign_{{ loop.index0 }}"
+                                               required
+                                               value="{{ player.in_game_name }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Real Name</label>
+                                        <input type="text" class="form-control"
+                                               name="player_real_{{ loop.index0 }}"
+                                               value="{{ player.real_name or '' }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Country</label>
+                                        <input type="text" class="form-control"
+                                               name="player_country_{{ loop.index0 }}"
+                                               value="{{ player.country or '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <input type="hidden" name="player_count" value="{{ players|length }}">
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Update Team
+                        </button>
+                        <a href="{{ url_for('tournament_detail', tournament_id=team.tournament_id) }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

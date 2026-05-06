@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}View All Data - RushB{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">
+            <i class="bi bi-database"></i> View All Data
+        </h1>
+        <p class="lead text-muted">Browse all system data and statistics</p>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="dataTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tournaments-tab" data-bs-toggle="tab"
+                data-bs-target="#tournaments-content" type="button">
+            <i class="bi bi-trophy"></i> Tournaments
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="teams-tab" data-bs-toggle="tab"
+                data-bs-target="#teams-content" type="button">
+            <i class="bi bi-people"></i> Teams
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="players-tab" data-bs-toggle="tab"
+                data-bs-target="#players-content" type="button">
+            <i class="bi bi-person"></i> Players
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="fixtures-tab" data-bs-toggle="tab"
+                data-bs-target="#fixtures-content" type="button">
+            <i class="bi bi-calendar-event"></i> Fixtures
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="maps-tab" data-bs-toggle="tab"
+                data-bs-target="#maps-content" type="button">
+            <i class="bi bi-map"></i> Maps
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="officials-tab" data-bs-toggle="tab"
+                data-bs-target="#officials-content" type="button">
+            <i class="bi bi-person-badge"></i> Officials
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="servers-tab" data-bs-toggle="tab"
+                data-bs-target="#servers-content" type="button">
+            <i class="bi bi-server"></i> Servers
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="dataTabContent">
+    <!-- Tournaments Tab -->
+    <div class="tab-pane fade show active" id="tournaments-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Tournaments ({{ tournaments|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if tournaments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Teams</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for t in tournaments %}
+                        <tr>
+                            <td>{{ t.tournament_id }}</td>
+                            <td><strong>{{ t.name }}</strong></td>
+                            <td>{{ t.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ t.end_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge badge-status status-{{ t.status.lower().replace('_', '-') }}">
+                                    {{ t.status.replace('_', ' ') }}
+                                </span>
+                            </td>
+                            <td>{{ t.team_count }}</td>
+                            <td>
+                                <a href="{{ url_for('tournament_detail', tournament_id=t.tournament_id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <form method="POST"
+                                      action="{{ url_for('delete_tournament', tournament_id=t.tournament_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete tournament {{ t.name }} and all its data?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No tournaments found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Teams Tab -->
+    <div class="tab-pane fade" id="teams-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Teams ({{ teams|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if teams %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Team Name</th>
+                            <th>Short Name</th>
+                            <th>Coach</th>
+                            <th>Tournament</th>
+                            <th>Players</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for team in teams %}
+                        <tr>
+                            <td>{{ team.team_id }}</td>
+                            <td><strong>{{ team.name }}</strong></td>
+                            <td>{{ team.short_name or '-' }}</td>
+                            <td>{{ team.coach_name }}</td>
+                            <td>{{ team.tournament_name }}</td>
+                            <td>{{ team.player_count }}</td>
+                            <td>
+                                <a href="{{ url_for('team_detail', team_id=team.team_id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <form method="POST"
+                                      action="{{ url_for('delete_team', team_id=team.team_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete team {{ team.name }} from this tournament?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No teams found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Players Tab -->
+    <div class="tab-pane fade" id="players-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Players ({{ players|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if players %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>In-Game Name</th>
+                            <th>Real Name</th>
+                            <th>Country</th>
+                            <th>Role</th>
+                            <th>Team</th>
+                            <th>Tournament</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for player in players %}
+                        <tr>
+                            <td>{{ player.player_id }}</td>
+                            <td><strong>{{ player.in_game_name }}</strong></td>
+                            <td>{{ player.real_name or '-' }}</td>
+                            <td>{{ player.country or '-' }}</td>
+                            <td>
+                                {% if player.role == 'PLAYER' %}
+                                <span class="badge bg-primary">Starting</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Substitute</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ player.team_name }}</td>
+                            <td>{{ player.tournament_name }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No players found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixtures Tab -->
+    <div class="tab-pane fade" id="fixtures-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Fixtures ({{ fixtures|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if fixtures %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tournament</th>
+                            <th>Match</th>
+                            <th>Map</th>
+                            <th>Score</th>
+                            <th>Phase</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for fixture in fixtures %}
+                        <tr>
+                            <td>{{ fixture.fixture_id }}</td>
+                            <td>{{ fixture.tournament_name }}</td>
+                            <td>{{ fixture.home_team_name }} vs {{ fixture.away_team_name }}</td>
+                            <td>{{ fixture.map_name or '-' }}</td>
+                            <td>
+                                {% if fixture.phase == 'END' %}
+                                {{ fixture.home_score }} - {{ fixture.away_score }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge phase-badge
+                                    {% if fixture.phase == 'SCHEDULED' %}bg-secondary
+                                    {% elif fixture.phase == 'MAP_SELECTION' %}bg-info
+                                    {% elif fixture.phase == 'IN_PROGRESS' %}bg-warning
+                                    {% elif fixture.phase == 'END' %}bg-success
+                                    {% endif %}">
+                                    {{ fixture.phase }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('manage_fixture', fixture_id=fixture.fixture_id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <form method="POST"
+                                      action="{{ url_for('delete_fixture', fixture_id=fixture.fixture_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete fixture {{ fixture.fixture_id }}?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No fixtures found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Maps Tab -->
+    <div class="tab-pane fade" id="maps-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Maps ({{ maps|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if maps %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for map in maps %}
+                        <tr>
+                            <td>{{ map.map_id }}</td>
+                            <td><strong>{{ map.name }}</strong></td>
+                            <td><code>{{ map.code }}</code></td>
+                            <td>
+                                {% if map.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST"
+                                      action="{{ url_for('delete_map', map_id=map.map_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete map {{ map.name }}?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No maps found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Officials Tab -->
+    <div class="tab-pane fade" id="officials-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Officials ({{ officials|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if officials %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for official in officials %}
+                        <tr>
+                            <td>{{ official.official_id }}</td>
+                            <td><strong>{{ official.name }}</strong></td>
+                            <td>
+                                <form method="POST"
+                                      action="{{ url_for('delete_official', official_id=official.official_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete official {{ official.name }}?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No officials found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Servers Tab -->
+    <div class="tab-pane fade" id="servers-content" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Servers ({{ servers|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if servers %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>IP Address</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for server in servers %}
+                        <tr>
+                            <td>{{ server.server_id }}</td>
+                            <td><strong>{{ server.name }}</strong></td>
+                            <td>{{ server.location or '-' }}</td>
+                            <td><code>{{ server.ip_address or '-' }}</code></td>
+                            <td>
+                                <form method="POST"
+                                      action="{{ url_for('delete_server', server_id=server.server_id) }}"
+                                      style="display:inline;"
+                                      onsubmit="return confirm('Delete server {{ server.name }}?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No servers found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

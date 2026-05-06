@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Select Tournament Winner - {{ tournament.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Tournament Winner Selection</h2>
+            <h4 class="text-muted">{{ tournament.name }}</h4>
+            <hr>
+
+            {% if tournament.winner_decided_by == 'MANUAL' and not tournament.winner_team_id %}
+            <!-- Need manual selection -->
+            <div class="alert alert-warning">
+                <h5><i class="bi bi-exclamation-triangle"></i> Manual Winner Selection Required</h5>
+                <p>Multiple teams are tied for first place. Please select the winner (coin toss result).</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Teams Tied for First Place</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manage_tournament_winner', tournament_id=tournament.tournament_id) }}">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Team Name</th>
+                                    <th>Short Name</th>
+                                    <th>Points</th>
+                                    <th>Round Difference</th>
+                                    <th>Rounds Won</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for team in tied_teams %}
+                                <tr>
+                                    <td class="text-center">
+                                        <input type="radio" name="winner_team_id" value="{{ team.team_id }}" required>
+                                    </td>
+                                    <td><strong>{{ team.team_name }}</strong></td>
+                                    <td>{{ team.short_name or '-' }}</td>
+                                    <td class="text-center">{{ team.points }}</td>
+                                    <td class="text-center">{{ team.round_difference }}</td>
+                                    <td class="text-center">{{ team.rounds_won }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-trophy"></i> Set Tournament Winner
+                            </button>
+                            <a href="{{ url_for('tournament_detail', tournament_id=tournament.tournament_id) }}"
+                               class="btn btn-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% elif tournament.winner_team_id %}
+            <!-- Winner already set -->
+            <div class="alert alert-success">
+                <h5><i class="bi bi-trophy-fill"></i> Tournament Winner</h5>
+                <h3>{{ tournament.winner_team_name }}</h3>
+                <p class="mb-0">
+                    Winner decided by:
+                    <strong>
+                        {% if tournament.winner_decided_by == 'POINTS' %}
+                        Most Points
+                        {% elif tournament.winner_decided_by == 'ROUND_DIFFERENCE' %}
+                        Round Difference (Tiebreaker)
+                        {% elif tournament.winner_decided_by == 'MANUAL' %}
+                        Manual Selection (Coin Toss)
+                        {% endif %}
+                    </strong>
+                </p>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ url_for('tournament_detail', tournament_id=tournament.tournament_id) }}"
+                   class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Tournament
+                </a>
+
+                <form method="POST"
+                      action="{{ url_for('clear_winner', tournament_id=tournament.tournament_id) }}"
+                      style="display: inline;"
+                      onsubmit="return confirm('Are you sure you want to clear the tournament winner?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Clear Winner
+                    </button>
+                </form>
+            </div>
+
+            {% else %}
+            <!-- No winner data -->
+            <div class="alert alert-info">
+                <p>No winner information available. This might be a system error.</p>
+            </div>
+
+            <a href="{{ url_for('tournament_detail', tournament_id=tournament.tournament_id) }}"
+               class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Back to Tournament
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

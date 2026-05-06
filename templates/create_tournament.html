@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Create Tournament - RushB{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">
+            <i class="bi bi-plus-circle"></i> Create New Tournament
+        </h1>
+        <p class="lead text-muted">Set up a new CS:GO round-robin tournament</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('create_tournament') }}">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-trophy"></i> Tournament Name *
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="name"
+                               name="name"
+                               required
+                               placeholder="e.g., Spring Championship 2024">
+                        <div class="form-text">Choose a descriptive name for your tournament</div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">
+                                <i class="bi bi-calendar-check"></i> Start Date *
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="start_date"
+                                   name="start_date"
+                                   required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">
+                                <i class="bi bi-calendar-x"></i> End Date *
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="end_date"
+                                   name="end_date"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-diagram-3"></i> Format
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               value="Round Robin (Double)"
+                               disabled>
+                        <div class="form-text">Each team plays every other team twice (home & away)</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Create Tournament
+                        </button>
+                        <a href="{{ url_for('tournaments') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set minimum end date to start date
+    document.getElementById('start_date').addEventListener('change', function() {
+        document.getElementById('end_date').min = this.value;
+    });
+</script>
+{% endblock %}

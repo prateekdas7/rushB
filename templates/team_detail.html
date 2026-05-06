@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team.name }} - RushB{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5">
+            {{ team.name }}
+            {% if team.short_name %}
+            <span class="badge bg-secondary">{{ team.short_name }}</span>
+            {% endif %}
+        </h1>
+        <p class="lead text-muted">
+            <i class="bi bi-person-badge"></i> Coach: {{ team.coach_name }}
+            {% if team.coach_nickname %}({{ team.coach_nickname }}){% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-end d-flex justify-content-end align-items-start gap-2 flex-wrap">
+        <a href="{{ url_for('tournament_detail', tournament_id=team.tournament_id) }}"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tournament
+        </a>
+
+        <a href="{{ url_for('edit_team', team_id=team.team_id) }}"
+           class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Edit Team
+        </a>
+
+        <form method="POST"
+              action="{{ url_for('delete_team', team_id=team.team_id) }}"
+              onsubmit="return confirm('Delete this team and all its players and stats?');"
+              style="display:inline;">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> Delete Team
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-people"></i> Team Roster
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if players %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>In-Game Name</th>
+                            <th>Real Name</th>
+                            <th>Country</th>
+                            <th>Role</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for player in players %}
+                        <tr>
+                            <td><strong>{{ player.in_game_name }}</strong></td>
+                            <td>{{ player.real_name or '-' }}</td>
+                            <td>{{ player.country or '-' }}</td>
+                            <td>
+                                {% if player.role == 'PLAYER' %}
+                                <span class="badge bg-primary">Starting Player</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Substitute</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="POST"
+                                      action="{{ url_for('delete_player', player_id=player.player_id) }}"
+                                      onsubmit="return confirm('Delete player {{ player.in_game_name }} from this team?');"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No players on this team.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

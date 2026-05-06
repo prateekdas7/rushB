@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Fixture #{{ fixture.fixture_id }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-6">
+            <i class="bi bi-clipboard-check"></i> Manage Fixture #{{ fixture.fixture_id }}
+        </h1>
+        <h3 class="text-muted">{{ fixture.home_team_name }} vs {{ fixture.away_team_name }}</h3>
+    </div>
+</div>
+
+<!-- Current Status Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Current Status</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Phase:</strong>
+                        <span class="badge phase-badge
+                            {% if fixture.phase == 'SCHEDULED' %} bg-secondary
+                            {% elif fixture.phase == 'MAP_SELECTION' %} bg-info
+                            {% elif fixture.phase == 'IN_PROGRESS' %} bg-warning
+                            {% elif fixture.phase == 'END' %} bg-success
+                            {% endif %}">
+                            {{ fixture.phase }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Map:</strong> {{ fixture.map_name or 'Not selected' }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Score:</strong>
+                        {% if fixture.phase == 'END' %}
+                            {{ fixture.home_score }} - {{ fixture.away_score }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Result:</strong>
+                        {% if fixture.phase == 'END' %}
+                            {% if fixture.is_draw %}
+                                Draw
+                            {% elif fixture.winner_team_id == fixture.home_team_id %}
+                                {{ fixture.home_team_name }} Won
+                            {% else %}
+                                {{ fixture.away_team_name }} Won
+                            {% endif %}
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Fixture Details (date/time + map/official/server/phase) -->
+<div class="row mb-4">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Fixture Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_fixture', fixture_id=fixture.fixture_id) }}">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="phase">Phase</label>
+                            <select name="phase" id="phase" class="form-select">
+                                <option value="SCHEDULED" {% if fixture.phase == 'SCHEDULED' %}selected{% endif %}>SCHEDULED</option>
+                                <option value="MAP_SELECTION" {% if fixture.phase == 'MAP_SELECTION' %}selected{% endif %}>MAP_SELECTION</option>
+                                <option value="IN_PROGRESS" {% if fixture.phase == 'IN_PROGRESS' %}selected{% endif %}>IN_PROGRESS</option>
+                                <option value="END" {% if fixture.phase == 'END' %}selected{% endif %}>END</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="scheduled_date">Date</label>
+                            <input type="date"
+                                   id="scheduled_date"
+                                   name="scheduled_date"
+                                   class="form-control"
+                                   value="{{ fixture.scheduled_at.strftime('%Y-%m-%d') if fixture.scheduled_at else '' }}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="scheduled_time">Time</label>
+                            <input type="time"
+                                   id="scheduled_time"
+                                   name="scheduled_time"
+                                   class="form-control"
+                                   value="{{ fixture.scheduled_at.strftime('%H:%M') if fixture.scheduled_at else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit_map_id">Map (from tournament pool)</label>
+                            <select name="map_id" id="edit_map_id" class="form-select">
+                                <option value="">-- Choose map --</option>
+                                {% for map in maps %}
+                                    <option value="{{ map.map_id }}" {% if fixture.map_id == map.map_id %}selected{% endif %}>
+                                        {{ map.name }} ({{ map.code }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit_official_id">Official</label>
+                            <select name="official_id" id="edit_official_id" class="form-select">
+                                <option value="">-- Choose official --</option>
+                                {% for official in officials %}
+                                    <option value="{{ official.official_id }}" {% if fixture.official_id == official.official_id %}selected{% endif %}>
+                                        {{ official.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="edit_server_id">Server</label>
+                            <select name="server_id" id="edit_server_id" class="form-select">
+                                <option value="">-- Choose server --</option>
+                                {% for server in servers %}
+                                    <option value="{{ server.server_id }}" {% if fixture.server_id == server.server_id %}selected{% endif %}>
+                                        {{ server.name }}{% if server.location %} ({{ server.location }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-save"></i> Save Fixture Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Phase Management -->
+{% if fixture.phase == 'SCHEDULED' %}
+<!-- Map Selection Phase -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-map"></i> Start Match - Map Selection</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('set_map_selection', fixture_id=fixture.fixture_id) }}">
+                    <div class="mb-3">
+                        <label for="map_id" class="form-label">Select Map *</label>
+                        <select class="form-select" id="map_id" name="map_id" required>
+                            <option value="">Choose a map...</option>
+                            {% for map in maps %}
+                                <option value="{{ map.map_id }}">{{ map.name }} ({{ map.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="official_id" class="form-label">Assign Official *</label>
+                        <select class="form-select" id="official_id" name="official_id" required>
+                            <option value="">Choose an official...</option>
+                            {% for official in officials %}
+                                <option value="{{ official.official_id }}">{{ official.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="server_id" class="form-label">Assign Server *</label>
+                        <select class="form-select" id="server_id" name="server_id" required>
+                            <option value="">Choose a server...</option>
+                            {% for server in servers %}
+                                <option value="{{ server.server_id }}">
+                                    {{ server.name }}{% if server.location %} ({{ server.location }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="bi bi-arrow-right-circle"></i> Set Map & Officials (Move to Map Selection)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif fixture.phase == 'MAP_SELECTION' %}
+<!-- In Progress Phase -->
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-play-circle"></i> Start Playing</h5>
+            </div>
+            <div class="card-body text-center">
+                <p>Map selected: <strong>{{ fixture.map_name }}</strong></p>
+                <form method="POST" action="{{ url_for('set_in_progress', fixture_id=fixture.fixture_id) }}">
+                    <button type="submit" class="btn btn-warning btn-lg w-100">
+                        <i class="bi bi-arrow-right-circle"></i> Mark as In Progress
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif fixture.phase == 'IN_PROGRESS' %}
+<!-- End Match Phase -->
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-flag-fill"></i> End Match & Record Stats</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('end_fixture', fixture_id=fixture.fixture_id) }}">
+                    <!-- Scores -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ fixture.home_team_name }} Score *</label>
+                            <input type="number" class="form-control form-control-lg"
+                                   name="home_score" required min="0" max="16">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ fixture.away_team_name }} Score *</label>
+                            <input type="number" class="form-control form-control-lg"
+                                   name="away_score" required min="0" max="16">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Home Team Players -->
+                    <h5 class="mb-3">{{ fixture.home_team_name }} - Player Stats</h5>
+                    {% for player in home_players %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>{{ player.in_game_name }}</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Kills</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_kills"
+                                           required min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Deaths</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_deaths"
+                                           required min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Assists</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_assists"
+                                           required min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <hr class="my-4">
+
+                    <!-- Away Team Players -->
+                    <h5 class="mb-3">{{ fixture.away_team_name }} - Player Stats</h5>
+                    {% for player in away_players %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>{{ player.in_game_name }}</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Kills</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_kills"
+                                           required min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Deaths</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_deaths"
+                                           required min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Assists</label>
+                                    <input type="number" class="form-control"
+                                           name="player_{{ player.player_id }}_assists"
+                                           required min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 mt-4">
+                        <i class="bi bi-check-circle"></i> End Match & Save Results
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif fixture.phase == 'END' %}
+<!-- Match Completed -->
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="alert alert-success">
+            <h4 class="alert-heading"><i class="bi bi-check-circle"></i> Match Completed!</h4>
+            <p class="mb-0">This fixture has been finalized.</p>
+        </div>
+
+        <!-- Match Summary -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Match Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col">
+                        <h4>{{ fixture.home_team_name }}</h4>
+                        <h2 class="display-4">{{ fixture.home_score }}</h2>
+                    </div>
+                    <div class="col-auto d-flex align-items-center">
+                        <h3>-</h3>
+                    </div>
+                    <div class="col">
+                        <h4>{{ fixture.away_team_name }}</h4>
+                        <h2 class="display-4">{{ fixture.away_score }}</h2>
+                    </div>
+                </div>
+                <div class="text-center">
+                    {% if fixture.is_draw %}
+                        <span class="badge bg-secondary fs-5">DRAW</span>
+                    {% else %}
+                        <span class="badge bg-success fs-5">
+                            Winner:
+                            {% if fixture.winner_team_id == fixture.home_team_id %}
+                                {{ fixture.home_team_name }}
+                            {% else %}
+                                {{ fixture.away_team_name }}
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Stats -->
+        {% if player_stats %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Player Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Kills</th>
+                            <th>Deaths</th>
+                            <th>Assists</th>
+                            <th>KDA</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for stat in player_stats %}
+                        <tr>
+                            <td><strong>{{ stat.in_game_name }}</strong></td>
+                            <td>{{ stat.team_name }}</td>
+                            <td>{{ stat.kills }}</td>
+                            <td>{{ stat.deaths }}</td>
+                            <td>{{ stat.assists }}</td>
+                            <td><strong>{{ "%.2f"|format(stat.kda) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{{ url_for('tournament_detail', tournament_id=fixture.tournament_id) }}"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tournament
+        </a>
+    </div>
+</div>
+{% endblock %}
